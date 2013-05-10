@@ -1,0 +1,28 @@
+{
+  "name": "barebone",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "jQuery": "*",
+    "underscore": "1.4.4",
+    "backbone": "0.9.10",
+    "backbone-associations": "0.4.1"
+  },
+  "devDependencies": {
+    "grunt": "0.3.17",
+    "qunit": "1.11.0"
+  },
+  "volo": {
+    "dependencies": {
+      "jquery": "github:jquery/jquery/1.9.1",
+      "backbone": "github:documentcloud/backbone/0.9.10",
+      "backbone-associations": "github:dhruvaray/backbone-associations/v0.4.1",
+      "underscore": "github:documentcloud/underscore/1.4.4",
+      "qunit": "github:jquery/qunit/v1.11.0"
+    },
+    "baseDir": "./ext/"
+  },
+  "author": {
+    "name": "Nejc Jelovcan"
+  }
+}
