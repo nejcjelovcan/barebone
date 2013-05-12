@@ -1,5 +1,5 @@
 //
-//  Backbone-associations.js 0.4.1
+//  Backbone-associations.js 0.4.2
 //
 //  (c) 2013 Dhruva Ray, Jaynti Kanani, Persistent Systems Ltd.
 //  Backbone-associations may be freely distributed under the MIT license.
@@ -21,10 +21,12 @@
     var _, Backbone, BackboneModel, BackboneCollection, ModelProto,
         defaultEvents, AssociatedModel, pathChecker;
 
-    if (typeof require !== 'undefined') {
+    if (typeof window === 'undefined') {
         _ = require('underscore');
         Backbone = require('backbone');
-        exports = module.exports = Backbone;
+        if (typeof exports !== 'undefined') {
+            exports = module.exports = Backbone;
+        }
     } else {
         _ = root._;
         Backbone = root.Backbone;
@@ -78,7 +80,11 @@
                 if (attr.match(pathChecker)) {
                     var pathTokens = getPathArray(attr), initials = _.initial(pathTokens), last = pathTokens[pathTokens.length - 1],
                         parentModel = this.get(initials);
-                    if (parentModel instanceof AssociatedModel) {
+                    if (typeof parentModel == 'undefined') { // @TODO changes this so that set('child.a', 1) works even when child is null
+                        obj = modelMap[this.cid] || (modelMap[this.cid] = {'model':this, 'data':{}});
+                        obj.data[initials[0]] || (obj.data[initials[0]] = {});
+                        obj.data[initials[0]][last] = attributes[attr];
+                    } else if (parentModel instanceof AssociatedModel) {
                         obj = modelMap[parentModel.cid] || (modelMap[parentModel.cid] = {'model':parentModel, 'data':{}});
                         obj.data[last] = attributes[attr];
                     }
@@ -107,6 +113,7 @@
             // Extract attributes and options.
             options || (options = {});
             if (options.unset) for (attr in attributes) attributes[attr] = void 0;
+            this.parents = this.parents || [];
 
             if (this.relations) {
                 // Iterate over `this.relations` and `set` model and collection values
@@ -135,18 +142,13 @@
                                 data = val;
                                 attributes[relationKey] = data;
                             } else {
-                                if (!this.attributes[relationKey]) {
-                                    data = collectionType ? new collectionType() : this._createCollection(relatedModel);
-                                    data.add(val, relationOptions);
-                                    attributes[relationKey] = data;
-                                } else {
-                                    this.attributes[relationKey].reset(val, relationOptions);
-                                    delete attributes[relationKey];
-                                }
+                                data = collectionType ? new collectionType() : this._createCollection(relatedModel);
+                                data.add(val, relationOptions);
+                                attributes[relationKey] = data;
                             }
 
                         } else if (relation.type === Backbone.One && relatedModel) {
-                            data = val instanceof AssociatedModel ? val : new relatedModel(val);
+                            data = val instanceof AssociatedModel ? val : new relatedModel(val, relationOptions);
                             attributes[relationKey] = data;
                         }
 
@@ -161,6 +163,15 @@
                             relationValue.on("all", relationValue._proxyCallback, this);
                         }
 
+                    }
+                    //Maintain reverse pointers - a.k.a parents
+                    var updated = attributes[relationKey];
+                    var original = this.attributes[relationKey];
+                    if (updated) {
+                        updated.parents = updated.parents || [];
+                        (updated.parents.indexOf(this) == -1) && updated.parents.push(this);
+                    } else if (original && original.parents.length > 0) {
+                        original.parents = _.difference(original.parents, [this]);
                     }
                 }, this);
             }
@@ -185,10 +196,14 @@
                     initialTokens = _.initial(pathTokens), colModel;
 
                 colModel = relationValue.find(function (model) {
-                    var changedModel = model.get(pathTokens);
-                    return eventObject === (changedModel instanceof AssociatedModel
-                        || changedModel instanceof BackboneCollection)
-                        ? changedModel : (model.get(initialTokens) || model);
+                    if (eventObject === model) return true;
+                    if (model) {
+                        var changedModel = model.get(initialTokens);
+                        if ((changedModel instanceof AssociatedModel || changedModel instanceof BackboneCollection) && eventObject === changedModel) return true;
+                        changedModel = model.get(pathTokens);
+                        return ((changedModel instanceof AssociatedModel || changedModel instanceof BackboneCollection) && eventObject === changedModel);
+                    }
+                    return false;
                 });
                 colModel && (indexEventObject = relationValue.indexOf(colModel));
             }
@@ -211,7 +226,7 @@
             _proxyCalls[eventPath] = true;
 
 
-            //Set up previous attributes correctly. Backbone v0.9.10 upwards...
+            //Set up previous attributes correctly.
             if ("change" === eventType) {
                 this._previousAttributes[relationKey] = relationValue._previousAttributes;
                 this.changed[relationKey] = relationValue;

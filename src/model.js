@@ -211,6 +211,7 @@ barebone.Model = ('AssociatedModel' in Backbone ? Backbone.AssociatedModel
         } else {
             this.once('change:'+attr, callback, context);
         }
+        return this;
     }
 }), {
     extend: function (properties, classProperties) {

@@ -95,10 +95,13 @@ test('#set', function () {
     equal(prj.get('vanilla').get('a'), 10);
     equal(prj.get('vanilla.b'), 'ohnoudidnt');
 
-    // do not set if no instance @WARNING
+    // do not set if no instance @WARNING (this is fixed in associated-model fork)
+    /* prj = new Project;
+    prj.set('item.name', 'Meti');
+    equal(prj.get('item'), undefined); */
     prj = new Project;
     prj.set('item.name', 'Meti');
-    equal(prj.get('item'), undefined);
+    equal(prj.get('item.name'), 'Meti');
 
     // IMPORTANT @WARNING
 
@@ -207,6 +210,7 @@ test('collection other events', function () {
     expect(6);
 
     prj.set('items', [{id: 2, a: 20}, {id: 3, a: 30}, {id: 4, a: 40}]);
+    console.log('PRJ', prj.get('items'));
 
     // prj.set('items', []) WILL NOT DO THE SAME (it will call reset) @TODO update associations library??
     prj.get('items').set([{id: 2, a: 30}, {id: 3, a: 30}, {id: 5, a: 50}]);
