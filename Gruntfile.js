@@ -1,12 +1,24 @@
 /*global module:false*/
 module.exports = function(grunt) {
   "use strict";
+  //var _ = require('underscore');
 
-  grunt.loadNpmTasks('grunt-volo');
+  //grunt.loadNpmTasks('grunt-volo');
+  grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-qunit');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+
+  var pkg = grunt.file.readJSON('package.json'),
+    ext_files = [];
+  Object.keys(pkg.dependencies).map(function (key) {
+    ext_files.push('ext/'+key+'.js');
+  });
 
   // Project configuration.
   grunt.initConfig({
-    pkg: '<json:package.json>',
+    pkg: pkg,
     meta: {
       banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
         '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
@@ -22,14 +34,16 @@ module.exports = function(grunt) {
     },
     concat: {
       dist: {
-        src: ['<banner:meta.banner>', 'src/header.js', 'src/core.js', '<file_strip_banner:src/model.js>', 'src/footer.js'],
+        src: /*ext_files*/([]).concat(['<banner:meta.banner>', 'src/header.js', 'src/core.js', 'src/model.js', 
+          'src/sync_api.js', 'src/footer.js']),
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
-    min: {
+    uglify: {
       dist: {
-        src: ['<banner:meta.banner>', '<config:concat.dist.dest>'],
-        dest: 'dist/<%= pkg.name %>.min.js'
+        files: {
+          'dist/<%= pkg.name %>.min.js': ['dist/<%= pkg.name %>.js']
+        },
       }
     },
     watch: {
@@ -66,16 +80,19 @@ module.exports = function(grunt) {
         //viidea: true
       }
     },
-    uglify: {},
-    server: {
-      port: 8002,
-      base: '.'
+    connect: {
+      server: {
+        options: {
+          port: 8002,
+          base: '.'
+        }
+      }
     }
   });
 
-  grunt.registerTask("run", "server watch");
+  grunt.registerTask("run", "connect watch");
 
-  grunt.registerTask("test", "link qunit");
+  grunt.registerTask("test", "lint qunit");
 
   // Default task.
   grunt.registerTask("default", "concat min lint qunit");
