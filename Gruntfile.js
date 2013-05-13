@@ -9,6 +9,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   var pkg = grunt.file.readJSON('package.json'),
     ext_files = [];
@@ -90,11 +91,11 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask("run", "connect watch");
+  grunt.registerTask("run", ["connect", "watch"]);
 
-  grunt.registerTask("test", "lint qunit");
+  grunt.registerTask("test", ["lint", "qunit"]);
 
   // Default task.
-  grunt.registerTask("default", "concat min lint qunit");
+  grunt.registerTask("default", ["concat", "uglify", "lint", "qunit"]);
 
 };
