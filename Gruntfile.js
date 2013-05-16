@@ -31,19 +31,31 @@ module.exports = function(grunt) {
       files: ['grunt.js', 'dist/barebone.js']//, 'test/**/*.js']
     },
     qunit: {
-      files: ['test/**/*.html']
+      files: ['test/**/*.html'],
     },
     concat: {
       dist: {
-        src: /*ext_files*/([]).concat(['<banner:meta.banner>', 'src/header.js', 'src/core.js', 'src/model.js', 
-          'src/sync_api.js', 'src/footer.js']),
+        src: ['<banner:meta.banner>', 'src/header.js', 'src/core.js', 'src/model.js', 
+          'src/sync_api.js', 'src/footer.js'],
         dest: 'dist/<%= pkg.name %>.js'
+      },
+      full: {
+        src: ['node_modules/underscore/underscore-min.js', 'node_modules/backbone/backbone-min.js', 
+          'node_modules/backbone-associations/backbone-associations-min.js',
+          'node_modules/knockout/build/output/knockout-latest.js', 'node_modules/knockback/knockback-core.min.js',
+          'dist/<%= pkg.name %>.min.js'],
+        dest: 'dist/<%= pkg.name %>-full.js'
       }
     },
     uglify: {
       dist: {
         files: {
           'dist/<%= pkg.name %>.min.js': ['dist/<%= pkg.name %>.js']
+        },
+      },
+      full: {
+        files: {
+          'dist/<%= pkg.name %>-full.min.js': ['dist/<%= pkg.name %>-full.js']
         },
       }
     },
@@ -96,6 +108,6 @@ module.exports = function(grunt) {
   grunt.registerTask("test", ["lint", "qunit"]);
 
   // Default task.
-  grunt.registerTask("default", ["concat", "uglify", "lint", "qunit"]);
+  grunt.registerTask("build", ["concat:dist", "uglify:dist", "concat:full", "uglify:full", "qunit"]);
 
 };
