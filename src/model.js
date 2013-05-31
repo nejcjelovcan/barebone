@@ -16,9 +16,7 @@ barebone.config = _(barebone.config || {}).extend({
     },
 
     // default query parameters for every request
-    queryParams: function () {
-        return {apikey: '_fyvqr_rkgenpg:cqwqVHEESyWgZUes'};
-    },
+    queryParams: {},
 
     queryParamsMap: {
         serializer: 'serializer',
@@ -75,7 +73,7 @@ barebone.QueryParams = Backbone.Model.extend({
     serialize: function (attrs) {
         var obj = {};
         _(attrs || this.attributes).each(function (val, key) {
-            if (key in barebone.config.queryParametersMap) key = barebone.config.queryParametersMap[key];
+            if (barebone.config.queryParametersMap[key]) key = barebone.config.queryParametersMap[key];
             else if (val === true) obj[key] = 'True';
             else if (val === false) obj[key] = 'False';
             else obj[key] = this.attributes;
@@ -116,7 +114,7 @@ barebone.TQueried = {
             }
             return response[barebone.config.responseParamsMap.results];
         }
-        return this.constructor.__super__.parse.apply(this, [response, options]);
+        return response;
     }
 };
 

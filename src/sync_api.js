@@ -24,7 +24,7 @@ barebone.sync_api = function (method, model, options) {
         modelName = isModel ? model.modelName : (model.model && model.model.modelName); // if collection, take from model
     if (model.queryParams) { _(finalParams).extend(model.queryParams.getForQuery()); }
     else if (isModel && model.collection && model.collection.queryParams) {
-        _(finalParams).extend(model.queryParams.getForQuery(true));
+        _(finalParams).extend(model.collection.queryParams.getForQuery(true));
     }
     _(finalParams).extend(options.queryParams || {});
     options.url = options.url || _(model).result('url') || ((barebone.config.urlRoot + modelName + '/') + (isModel && model.has('id') ? model.get('id') : ''));

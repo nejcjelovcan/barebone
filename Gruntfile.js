@@ -43,7 +43,7 @@ module.exports = function(grunt) {
         src: ['node_modules/underscore/underscore-min.js', 'node_modules/backbone/backbone-min.js', 
           'node_modules/backbone-associations/backbone-associations-min.js',
           'node_modules/knockout/build/output/knockout-latest.js', 'node_modules/knockback/knockback-core.min.js',
-          'dist/<%= pkg.name %>.min.js'],
+          'dist/<%= pkg.name %>.js'],
         dest: 'dist/<%= pkg.name %>-full.js'
       }
     },
