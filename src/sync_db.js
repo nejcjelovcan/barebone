@@ -1,22 +1,7 @@
 var oldBackboneSync = Backbone.sync;
 /*
-    Custom barebone sync
-    
-    Takes url:
-    1. takes url from options
-    2. if falsy, takes from model/collection (property or method 'url')
-    3. if falsy, takes from config.urlRoot, appends model.modelName and id if model has one
-    
-    Merges queryParams in this order:
-    1. config.queryParams (property or method)
-    2. model/collection.queryParams || model.collection.queryParams (calls .getForQuery(parent))
-    3. options.queryParams
-
-    Maps with barebone.QueryParams.serialize()
-    (according to config.queryParamsMap)
-    Appends params as querystring to url from first step
-
-    Calls old Backbone.sync with updated options.url
+    Deprecated
+    @see: REST api :P
 */
 barebone.sync_db = function (method, model, options) {
     var finalParams = _({}).extend(_(barebone.config).result('queryParams')),

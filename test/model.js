@@ -101,7 +101,7 @@ test('#onceSet', function () {
     var Item = barebone.Model.extend({});
     var Model = barebone.Model.extend({
         defaults: {a: 10},
-        relations: [ {type: Backbone.One, key: 'item', relatedModel: Model} ]
+        relations: [ {type: Backbone.One, key: 'item', relatedModel: barebone.Model} ]
     });
     var m = new Model();
 

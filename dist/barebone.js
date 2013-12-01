@@ -11,30 +11,25 @@ if (typeof console === 'undefined') {
 
 barebone.config = _(barebone.config || {}).extend({
     urlRoot: '/site/api/',
-    dbString: 'pg://talmai@localhost/odalisca',
-    dbClient: null,
-
-    // schemas: { modelName: {modelAttr: {}} },
+    
     types: {    // types used to set getter and setter for given schema attribute type name
         string: { setter: function (val) { return ''+val; } },
         'boolean': { setter: function (val) { return !!val; } },
         integer: { setter: function(val) { return parseInt(val, 10); } },
         'float': { setter: function(val) { return parseFloat(val); } },
-        datetime: { setter: function(val) {
+        datetime: { setter: function(val) { // @todo Z thingy
             return Date.prototype.isPrototypeOf(val) ? val : new Date(val);
         } }
     },
 
     // default query parameters for every request
-    queryParams: function () {
-        return {apikey: '_fyvqr_rkgenpg:cqwqVHEESyWgZUes'};
-    },
+    queryParams: {},
 
     queryParamsMap: {
         serializer: 'serializer',
         pageSize: 'page_size',
         page: 'page',
-        ordering: 'ordering'
+        ordering: 'order'
     },
 
     responseParamsMap: {
@@ -84,11 +79,12 @@ barebone.QueryParams = Backbone.Model.extend({
 }, {
     serialize: function (attrs) {
         var obj = {};
-        _(attrs || this.attributes).each(function (val, key) {
-            if (key in barebone.config.queryParametersMap) key = barebone.config.queryParametersMap[key];
-            else if (val === true) obj[key] = 'True';
+        _(attrs).each(function (val, key) {
+            if (barebone.config.queryParamsMap[key]) key = barebone.config.queryParamsMap[key];
+
+            if (val === true) obj[key] = 'True';
             else if (val === false) obj[key] = 'False';
-            else obj[key] = this.attributes;
+            else obj[key] = val;
         });
         return obj;
     }
@@ -120,13 +116,16 @@ barebone.TQueried = {
     },
     parse: function (response, options) {
         if (Backbone.Collection.prototype.isPrototypeOf(this)) {
+            if (_(response).isArray()) {
+                return response;
+            }
             var count = response[barebone.config.responseParamsMap.count];
             if (typeof count !== 'undefined') {
                 this.setQueryParams({count: count});
             }
             return response[barebone.config.responseParamsMap.results];
         }
-        return this.constructor.__super__.parse.apply(this, [response, options]);
+        return response;
     }
 };
 
@@ -145,7 +144,7 @@ barebone.expandSchema = function(schema) {
     schema can have setters and getters
 
     set can take options.raw=true to ignore setter (to get without a getter just call model.attributes.attrname)
-    (this ignores relations which are called further in _super_.set if associatedmodel is used)
+    (this still magically handles relations which are called further in _super_.set if associatedmodel is used)
 */
 barebone.MSchemed = {
     get: function (attr, options) {
@@ -247,13 +246,12 @@ barebone.sync_api = function (method, model, options) {
         modelName = isModel ? model.modelName : (model.model && model.model.modelName); // if collection, take from model
     if (model.queryParams) { _(finalParams).extend(model.queryParams.getForQuery()); }
     else if (isModel && model.collection && model.collection.queryParams) {
-        _(finalParams).extend(model.queryParams.getForQuery(true));
+        _(finalParams).extend(model.collection.queryParams.getForQuery(true));
     }
     _(finalParams).extend(options.queryParams || {});
     options.url = options.url || _(model).result('url') || ((barebone.config.urlRoot + modelName + '/') + (isModel && model.has('id') ? model.get('id') : ''));
     options.url += '?' + $.param(barebone.QueryParams.serialize(finalParams));
 
-    console.log('BACKBONE.SYNC', method, model, options);
     return oldBackboneSync(method, model, options);
 };
 }(typeof window.barebone === 'undefined' ? (window.barebone = {}) : window.barebone, Backbone, jQuery));

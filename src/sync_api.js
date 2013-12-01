@@ -30,6 +30,5 @@ barebone.sync_api = function (method, model, options) {
     options.url = options.url || _(model).result('url') || ((barebone.config.urlRoot + modelName + '/') + (isModel && model.has('id') ? model.get('id') : ''));
     options.url += '?' + $.param(barebone.QueryParams.serialize(finalParams));
 
-    console.log('BACKBONE.SYNC', method, model, options);
     return oldBackboneSync(method, model, options);
 };
