@@ -27,8 +27,13 @@ barebone.sync_api = function (method, model, options) {
         _(finalParams).extend(model.collection.queryParams.getForQuery(true));
     }
     _(finalParams).extend(options.queryParams || {});
-    options.url = options.url || _(model).result('url') || ((barebone.config.urlRoot + modelName + '/') + (isModel && model.has('id') ? model.get('id') : ''));
+    options.url = (options.url || model.urlRoot
+     || (model.model && model.model.urlRoot)
+     || (model.collection && model.collection.urlRoot))
+        + (isModel && model.has('id') ? model.get('id') : '');
+    window.params = [options.url+'', model.url, model.urlRoot, model.model && model.model.prototype.urlRoot];
     options.url += '?' + $.param(barebone.QueryParams.serialize(finalParams));
 
     return oldBackboneSync(method, model, options);
 };
+Backbone.sync = barebone.sync_api;
