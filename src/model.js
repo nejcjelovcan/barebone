@@ -87,9 +87,7 @@ barebone.QueryParams = Backbone.Model.extend({
 barebone.TQueried = {
     initQueryParams: function (options) {
         options || (options = {});
-        if (options.queryParams) {
-            this.setQueryParams(options.queryParams, {fetch: false});
-        }
+        this.setQueryParams(options.queryParams||{}, {fetch: false});
     },
     setQueryParams: function (attributes, options) {
         var obj;
@@ -99,8 +97,8 @@ barebone.TQueried = {
             obj = attributes;
         }
         options || (options = {});
-        if (!this.queryParams) {
-            this.queryParams = new barebone.QueryParams({}, { parent: this });
+        if (!this.queryParams || !barebone.QueryParams.prototype.isPrototypeOf(this.queryParams)) {
+            this.queryParams = new barebone.QueryParams(this.queryParams||{}, { parent: this });
         }
         this.queryParams.set(obj, {silent: options.fetch === false || options.silent === true});
     },
@@ -165,9 +163,9 @@ barebone.MSchemed = {
 barebone.Model = ('AssociatedModel' in Backbone ? Backbone.AssociatedModel
 : Backbone.Model).extend(_({}).extend(barebone.TQueried, barebone.MSchemed, {
     modelName: 'model',
-    initialize: function (attrs, options) {
+    constructor: function (attrs, options) {
         ('AssociatedModel' in Backbone ? Backbone.AssociatedModel
-            : Backbone.Model).prototype.initialize.apply(this, [attrs, options]);
+            : Backbone.Model).apply(this, [attrs, options]);
         this.initQueryParams(options);
     },
     onceSet: function (attr, callback, context) {
@@ -204,8 +202,8 @@ barebone.Model = ('AssociatedModel' in Backbone ? Backbone.AssociatedModel
 });
 
 barebone.Collection = Backbone.Collection.extend(_({}).extend(barebone.TQueried, {
-    initialize: function (items, options) {
-        Backbone.Collection.prototype.initialize.apply(this, [items, options]);
+    constructor: function (items, options) {
+        Backbone.Collection.apply(this, [items, options]);
         this.initQueryParams(options);
     }
 }));
