@@ -51,9 +51,11 @@ barebone.QueryParams = Backbone.Model.extend({
     },
     nextPage: function () {
         this.set('page', this.get('page') + 1);
+        return this;
     },
     prevPage: function () {
         this.set('page', this.get('page') - 1);
+        return this;
     }
 }, {
     serialize: function (attrs) {
@@ -77,6 +79,7 @@ barebone.TQueried = {
     initQueryParams: function (options) {
         options || (options = {});
         this.setQueryParams(options.queryParams||{}, {fetch: false});
+        return this;
     },
     setQueryParams: function (attributes, options) {
         var obj;
@@ -90,6 +93,7 @@ barebone.TQueried = {
             this.queryParams = new barebone.QueryParams(this.queryParams||{}, { parent: this });
         }
         this.queryParams.set(obj, {silent: options.fetch === false || options.silent === true});
+        return this;
     },
     parse: function (response, options) {
         if (Backbone.Collection.prototype.isPrototypeOf(this)) {
