@@ -56,30 +56,6 @@ test('#parse', function () {
     equal(c.queryParams.get('count'), 10);
 });
 
-module('barebone.MSchemed');
-
-var types = {'integer': {setter: function (val) { return parseInt(val, 10); }, getter: function (val) { return '0'+val; }}},
-    MS;
-withConfig({types: types}, function () {
-    MS = barebone.Model.extend({schema: {a: {type: 'integer'}}});
-})();
-test('barebone.expandSchema', withConfig({types: types}, function () {
-    var expanded = barebone.expandSchema({a: {type: 'integer'}});
-    equal(expanded.a.getter, types.integer.getter);
-    equal(expanded.a.setter, types.integer.setter);
-}));
-
-test('#get', function () {
-    m = new MS({a: 10});
-    equal(m.get('a'), '010');
-});
-
-test('#set', function () {
-    m = new MS({a: 10});
-    m.set('a', '020');
-    equal(m.attributes.a, 20);
-});
-
 module('barebone.Model');
 
 test('#construct', function () {
