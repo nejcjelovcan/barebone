@@ -11,11 +11,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
 
-  var pkg = grunt.file.readJSON('package.json'),
-    ext_files = [];
-  Object.keys(pkg.dependencies).map(function (key) {
-    ext_files.push('ext/'+key+'.js');
-  });
+  var pkg = grunt.file.readJSON('package.json');
 
   // Project configuration.
   grunt.initConfig({
@@ -39,10 +35,13 @@ module.exports = function(grunt) {
           'src/sync_api.js', 'src/footer.js'],
         dest: 'dist/<%= pkg.name %>.js'
       },
+      backbone: {
+        src: ['node_modules/backbone-associations/backbone-associations-min.js', 'dist/<%= pkg.name %>.js'],
+        dest: 'dist/<%= pkg.name %>-backbone.js'
+      },
       full: {
         src: ['node_modules/underscore/underscore-min.js', 'node_modules/backbone/backbone-min.js', 
           'node_modules/backbone-associations/backbone-associations-min.js',
-          'node_modules/knockout/build/output/knockout-latest.debug.js', 'node_modules/knockback/knockback.js',
           'dist/<%= pkg.name %>.js'],
         dest: 'dist/<%= pkg.name %>-full.js'
       }
@@ -52,6 +51,11 @@ module.exports = function(grunt) {
         files: {
           'dist/<%= pkg.name %>.min.js': ['dist/<%= pkg.name %>.js']
         },
+      },
+      backbone: {
+        files: {
+          'dist/<%= pkg.name %>-backbone.min.js': ['dist/<%= pkg.name %>-backbone.js']
+        }
       },
       full: {
         files: {
@@ -108,6 +112,7 @@ module.exports = function(grunt) {
   grunt.registerTask("test", ["lint", "qunit"]);
 
   // Default task.
-  grunt.registerTask("build", ["concat:dist", "uglify:dist", "concat:full", "uglify:full", "qunit"]);
+  grunt.registerTask("build", ["concat:dist", "uglify:dist", "concat:backbone", "uglify:backbone", "concat:full", "uglify:full", "qunit"]);
+  grunt.registerTask("default", ["build"])
 
 };
