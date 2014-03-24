@@ -97,9 +97,7 @@ barebone.QueryParams = Backbone.Model.extend({
 barebone.TQueried = {
     initQueryParams: function (options) {
         options || (options = {});
-        if (options.queryParams) {
-            this.setQueryParams(options.queryParams, {fetch: false});
-        }
+        this.setQueryParams(options.queryParams||{}, {fetch: false});
     },
     setQueryParams: function (attributes, options) {
         var obj;
@@ -109,8 +107,8 @@ barebone.TQueried = {
             obj = attributes;
         }
         options || (options = {});
-        if (!this.queryParams) {
-            this.queryParams = new barebone.QueryParams({}, { parent: this });
+        if (!this.queryParams || !barebone.QueryParams.prototype.isPrototypeOf(this.queryParams)) {
+            this.queryParams = new barebone.QueryParams(this.queryParams||{}, { parent: this });
         }
         this.queryParams.set(obj, {silent: options.fetch === false || options.silent === true});
     },
@@ -175,9 +173,9 @@ barebone.MSchemed = {
 barebone.Model = ('AssociatedModel' in Backbone ? Backbone.AssociatedModel
 : Backbone.Model).extend(_({}).extend(barebone.TQueried, barebone.MSchemed, {
     modelName: 'model',
-    initialize: function (attrs, options) {
+    constructor: function (attrs, options) {
         ('AssociatedModel' in Backbone ? Backbone.AssociatedModel
-            : Backbone.Model).prototype.initialize.apply(this, [attrs, options]);
+            : Backbone.Model).apply(this, [attrs, options]);
         this.initQueryParams(options);
     },
     onceSet: function (attr, callback, context) {
@@ -214,8 +212,8 @@ barebone.Model = ('AssociatedModel' in Backbone ? Backbone.AssociatedModel
 });
 
 barebone.Collection = Backbone.Collection.extend(_({}).extend(barebone.TQueried, {
-    initialize: function (items, options) {
-        Backbone.Collection.prototype.initialize.apply(this, [items, options]);
+    constructor: function (items, options) {
+        Backbone.Collection.apply(this, [items, options]);
         this.initQueryParams(options);
     }
 }));
@@ -249,9 +247,14 @@ barebone.sync_api = function (method, model, options) {
         _(finalParams).extend(model.collection.queryParams.getForQuery(true));
     }
     _(finalParams).extend(options.queryParams || {});
-    options.url = options.url || _(model).result('url') || ((barebone.config.urlRoot + modelName + '/') + (isModel && model.has('id') ? model.get('id') : ''));
+    options.url = (options.url || model.urlRoot
+     || (model.model && model.model.urlRoot)
+     || (model.collection && model.collection.urlRoot))
+        + (isModel && model.has('id') ? model.get('id') : '');
+    window.params = [options.url+'', model.url, model.urlRoot, model.model && model.model.prototype.urlRoot];
     options.url += '?' + $.param(barebone.QueryParams.serialize(finalParams));
 
     return oldBackboneSync(method, model, options);
 };
+Backbone.sync = barebone.sync_api;
 }(typeof window.barebone === 'undefined' ? (window.barebone = {}) : window.barebone, Backbone, jQuery));
